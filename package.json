@@ -1,6 +1,6 @@
 {
   "name": "axomic-mysql-handler",
-  "version": "1.0",
+  "version": "1.0.0",
   "description": "A singleton designed to allow proper connection pooling in multi-process/request node systems",
   "main": "axomicMysqlHandler.js",
   "dependencies": {
