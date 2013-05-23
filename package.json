@@ -5,7 +5,7 @@
   "main": "axomicMysqlHandler.js",
   "dependencies": {
     "mysql": "2.0.0-alpha8"
-  }
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
