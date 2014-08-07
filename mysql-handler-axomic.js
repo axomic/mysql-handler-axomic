@@ -10,9 +10,12 @@ var singleton = function singleton(){
         connections = {};
 
         connections.getConnection = function(coreObj, callback) {
+            //console.log('getconnection called', callback);
             coreObj.getConnectionCallback = callback;
             if(connections[coreObj.host] !== undefined) {
-                getPooledConnection(coreObj, coreObj.getConnectionCallback);
+                coreObj.connection = connections[coreObj.host];
+                callback(coreObj);
+                //getPooledConnection(coreObj, coreObj.getConnectionCallback);
             } else {
                 coreObj.getPoolConCallback = coreObj.getConnectionCallback;
                 getMysqlConnection(coreObj);
@@ -28,16 +31,26 @@ var singleton = function singleton(){
                   user     : coreObj.user,
                   password : coreObj.password
             }); 
-            getPooledConnection(coreObj, coreObj.getPoolConCallback);
+            coreObj.connection = connections[coreObj.host];
+            coreObj.getPoolConCallback(coreObj);
+            //getPooledConnection(coreObj, coreObj.getPoolConCallback);
         }
 
         function getPooledConnection(coreObj, callback) {
             connections[coreObj.host].getConnection(function(err, newCon) {
                 if(!err) {
                     coreObj.connection = newCon;
+                    newCon.removeAllListeners('error');
+                    newCon.on('error', function(err){
+                        if(err.code === 'PROTOCOL_CONNECTION_LOST') { 
+                            console.log('PROTOCOL_CONNECTION_LOST in mysqlHandler');     
+                            console.log('attempting to re-establish conneciton', newCon);
+                            setTimeout(getPooledConnection, 3000, coreObj, callback);
+                        }
+                    });
                     callback(coreObj);
                 } else {
-                    console.log("Error Getting Pool Connection: ", err);
+                    console.error("Error Getting Pool Connection: ", err);
                 }
             });   
         }
